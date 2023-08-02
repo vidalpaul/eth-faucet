@@ -3,7 +3,8 @@ pragma solidity ^0.8.21;
 
 contract Faucet {
     address public owner;
-    uint public amountAllowed = 1000000000000000000;
+    uint public amountAllowed = 1 ether;
+    uint public balanceLimit = 10 ether;
 
     mapping(address => uint) public lockTime;
 
@@ -13,12 +14,22 @@ contract Faucet {
         "Not enough funds in the faucet. Please donate";
     string public constant ERR_LOCK_TIME =
         "Lock time has not expired. Please try again later";
+    string public constant ERR_INVALID_ADDRESS = "Invalid address";
+    string public constant ERR_ACCOUNT_EXCEEDS_LIMIT =
+        "Beneficiary account balance exceeds balance limit";
 
-    event TokensRequested(address indexed requestor, uint amount);
+    event InitialFund(uint amount);
+
+    event TokensRequested(
+        address indexed requestor,
+        address indexed beneficiary,
+        uint amount
+    );
     event DonationReceived(address indexed donor, uint amount);
 
     constructor() payable {
         owner = msg.sender;
+        emit InitialFund(msg.value);
     }
 
     modifier onlyOwner() {
@@ -36,6 +47,25 @@ contract Faucet {
         _;
     }
 
+    modifier validAddress(address _address) {
+        require(_address != address(0), ERR_INVALID_ADDRESS);
+        _;
+    }
+
+    modifier requireBalanceBelowLimit(address _beneficiary) {
+        require(_beneficiary.balance < 10 ether, ERR_ACCOUNT_EXCEEDS_LIMIT);
+        _;
+    }
+
+    // Fallback function accepts Ether donations
+    fallback() external payable {
+        emit DonationReceived(msg.sender, msg.value);
+    }
+
+    receive() external payable {
+        emit DonationReceived(msg.sender, msg.value);
+    }
+
     function setOwner(address newOwner) public onlyOwner {
         owner = newOwner;
     }
@@ -44,17 +74,28 @@ contract Faucet {
         amountAllowed = newAmountAllowed;
     }
 
+    function setBalanceLimit(uint newBalanceLimit) public onlyOwner {
+        balanceLimit = newBalanceLimit;
+    }
+
     function donateTofaucet() public payable {
         emit DonationReceived(msg.sender, msg.value);
     }
 
     function requestTokens(
-        address payable _requestor
-    ) public payable faucetIsFunded lockTimeHasExpired {
-        _requestor.transfer(amountAllowed);
+        address payable _beneficiary
+    )
+        public
+        payable
+        faucetIsFunded
+        lockTimeHasExpired
+        validAddress(_beneficiary)
+        requireBalanceBelowLimit(_beneficiary)
+    {
+        _beneficiary.transfer(amountAllowed);
 
         lockTime[msg.sender] = block.timestamp + 1 days;
 
-        emit TokensRequested(msg.sender, amountAllowed);
+        emit TokensRequested(msg.sender, _beneficiary, amountAllowed);
     }
 }
