@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-// import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
 
-contract Faucet {
-    address public owner;
+contract Faucet is Ownable {
     uint public amountAllowed = 1 ether;
     uint public balanceLimit = 10 ether;
 
@@ -30,13 +29,7 @@ contract Faucet {
     event DonationReceived(address indexed donor, uint amount);
 
     constructor() payable {
-        owner = msg.sender;
         emit InitialFund(msg.value);
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, ERR_ONLY_OWNER);
-        _;
     }
 
     modifier faucetIsFunded() {
@@ -66,10 +59,6 @@ contract Faucet {
 
     receive() external payable {
         emit DonationReceived(msg.sender, msg.value);
-    }
-
-    function setOwner(address newOwner) public onlyOwner {
-        owner = newOwner;
     }
 
     function setAmountallowed(uint newAmountAllowed) public onlyOwner {
