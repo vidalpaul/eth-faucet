@@ -9,14 +9,12 @@ contract Faucet is Ownable {
 
     mapping(address => uint) public lockTime;
 
-    string public constant ERR_ONLY_OWNER =
-        "Only owner can call this function.";
-    string public constant ERR_NOT_FUNDED =
+    string private constant ERR_NOT_FUNDED =
         "Not enough funds in the faucet. Please donate";
-    string public constant ERR_LOCK_TIME =
+    string private constant ERR_LOCK_TIME =
         "Lock time has not expired. Please try again later";
-    string public constant ERR_INVALID_ADDRESS = "Invalid address";
-    string public constant ERR_ACCOUNT_EXCEEDS_LIMIT =
+    string private constant ERR_INVALID_ADDRESS = "Invalid address";
+    string private constant ERR_ACCOUNT_EXCEEDS_LIMIT =
         "Beneficiary account balance exceeds balance limit";
 
     event InitialFund(uint amount);
@@ -54,11 +52,11 @@ contract Faucet is Ownable {
 
     // Fallback function accepts Ether donations
     fallback() external payable {
-        emit DonationReceived(msg.sender, msg.value);
+        donateTofaucet();
     }
 
     receive() external payable {
-        emit DonationReceived(msg.sender, msg.value);
+        donateTofaucet();
     }
 
     function setAmountallowed(uint newAmountAllowed) public onlyOwner {
