@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
+// import "openzeppelin-contracts/contracts/access/Ownable.sol";
+
 contract Faucet {
     address public owner;
     uint public amountAllowed = 1 ether;
@@ -94,7 +96,7 @@ contract Faucet {
     {
         _beneficiary.transfer(amountAllowed);
 
-        lockTime[msg.sender] = block.timestamp + 1 days;
+        lockTime[_beneficiary] = block.timestamp + 1 days;
 
         emit TokensRequested(msg.sender, _beneficiary, amountAllowed);
     }
