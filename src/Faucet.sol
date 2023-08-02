@@ -2,8 +2,9 @@
 pragma solidity ^0.8.21;
 
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts/contracts/security/Pausable.sol";
 
-contract Faucet is Ownable {
+contract Faucet is Pausable, Ownable {
     uint public amountAllowed = 1 ether;
     uint public balanceLimit = 10 ether;
 
@@ -80,6 +81,7 @@ contract Faucet is Ownable {
         lockTimeHasExpired
         validAddress(_beneficiary)
         requireBalanceBelowLimit(_beneficiary)
+        whenNotPaused
     {
         _beneficiary.transfer(amountAllowed);
 
