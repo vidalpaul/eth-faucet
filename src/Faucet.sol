@@ -45,6 +45,15 @@ contract Faucet is Ownable {
         _;
     }
 
+    modifier refundGasCost() {
+        uint remainingGasStart = gasleft();
+        _;
+        uint remainingGasEnd = gasleft();
+        uint gasCost = ((remainingGasStart - remainingGasEnd) + 21000 + 9700) *
+            tx.gasprice;
+        payable(tx.origin).transfer(gasCost);
+    }
+
     modifier requireBalanceBelowLimit(address _beneficiary) {
         require(_beneficiary.balance < 10 ether, ERR_ACCOUNT_EXCEEDS_LIMIT);
         _;
