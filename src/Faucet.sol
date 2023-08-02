@@ -52,11 +52,11 @@ contract Faucet is Ownable {
 
     // Fallback function accepts Ether donations
     fallback() external payable {
-        donateTofaucet();
+        donateToFaucet();
     }
 
     receive() external payable {
-        donateTofaucet();
+        donateToFaucet();
     }
 
     function setAmountallowed(uint newAmountAllowed) public onlyOwner {
@@ -67,7 +67,7 @@ contract Faucet is Ownable {
         balanceLimit = newBalanceLimit;
     }
 
-    function donateTofaucet() public payable {
+    function donateToFaucet() public payable {
         emit DonationReceived(msg.sender, msg.value);
     }
 
